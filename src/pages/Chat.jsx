@@ -1,21 +1,26 @@
-import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
+import { db } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function Chat() {
   const location = useLocation();
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Handle forked prompt
+  // Handle forked prompt - load full conversation context
   useEffect(() => {
-    if (location.state?.forkedPrompt) {
+    if (location.state?.forkedMessages) {
+      // Load entire conversation history
+      setMessages(location.state.forkedMessages);
+      setInput(""); // Clear input
+    } else if (location.state?.forkedPrompt) {
+      // Just the prompt, no history
       setInput(location.state.forkedPrompt);
     }
   }, [location.state]);
@@ -32,40 +37,53 @@ export default function Chat() {
     if (!input.trim() || loading) return;
 
     const userMessage = input.trim();
-    setInput('');
+    setInput("");
 
     // Add user message
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    const newMessages = [...messages, { role: "user", content: userMessage }];
+    setMessages(newMessages);
 
     setLoading(true);
 
     try {
-      // Call OpenAI API
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+      // Call OpenAI API with full conversation history
+      const response = await fetch(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: newMessages,
+            temperature: 0.7,
+          }),
         },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [...messages, { role: 'user', content: userMessage }],
-          temperature: 0.7
-        })
-      });
+      );
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
 
       const data = await response.json();
       const aiMessage = data.choices[0].message.content;
 
       // Add AI response
-      setMessages(prev => [...prev, { role: 'assistant', content: aiMessage }]);
-
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: aiMessage },
+      ]);
     } catch (error) {
-      console.error('Error:', error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Sorry, there was an error. Please try again.' 
-      }]);
+      console.error("Error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Sorry, there was an error. Please try again.",
+        },
+      ]);
     }
 
     setLoading(false);
@@ -75,48 +93,61 @@ export default function Chat() {
     if (messages.length === 0) return;
 
     try {
-      await addDoc(collection(db, 'posts'), {
+      await addDoc(collection(db, "posts"), {
         messages: messages,
         authorId: currentUser.uid,
         authorEmail: currentUser.email,
-        model: 'GPT-3.5',
+        model: "GPT-3.5",
         likes: 0,
         dislikes: 0,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
 
-      alert('Shared to feed!');
-      navigate('/feed');
+      alert("Shared to feed!");
+      navigate("/feed");
     } catch (error) {
-      console.error('Error sharing:', error);
-      alert('Failed to share');
+      console.error("Error sharing:", error);
+      alert("Failed to share");
     }
+  }
+
+  function handleNewChat() {
+    setMessages([]);
+    setInput("");
   }
 
   async function handleLogout() {
     await logout();
-    navigate('/login');
+    navigate("/");
   }
 
   return (
     <div className="h-screen flex flex-col bg-gray-900">
       {/* Header */}
       <div className="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-white">Synapse</h1>
+        <h1 className="text-2xl font-bold text-white">Synapse</h1>
         <div className="flex gap-2">
           <button
-            onClick={() => navigate('/feed')}
+            onClick={() => navigate("/feed")}
             className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition"
           >
             Feed
           </button>
           {messages.length > 0 && (
-            <button
-              onClick={handleShareToFeed}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
-            >
-              Share to Feed
-            </button>
+            <>
+              <button
+                onClick={handleNewChat}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+              >
+                New Chat
+              </button>
+              <button
+                onClick={handleShareToFeed}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition font-semibold"
+              >
+                Share to Feed
+              </button>
+            </>
           )}
           <button
             onClick={handleLogout}
@@ -139,13 +170,13 @@ export default function Chat() {
         {messages.map((msg, idx) => (
           <div
             key={idx}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
               className={`max-w-2xl px-4 py-3 rounded-lg ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-100'
+                msg.role === "user"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-700 text-gray-100"
               }`}
             >
               <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -171,7 +202,7 @@ export default function Chat() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             placeholder="Type your message..."
             className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
             disabled={loading}
