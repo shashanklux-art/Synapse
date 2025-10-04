@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Chat from './pages/Chat';
 import Feed from './pages/Feed';
@@ -7,7 +8,7 @@ import Profile from './pages/Profile';
 
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
-  return currentUser ? children : <Navigate to="/feed" />;
+  return currentUser ? children : <Navigate to="/login" />;
 }
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/profile/:userId" element={<Profile />} />
@@ -26,7 +28,6 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/feed" />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
