@@ -1,13 +1,15 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { 
+import { createContext, useContext, useEffect, useState } from "react";
+import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
-} from 'firebase/auth';
-import { auth } from '../firebase';
+  signInWithPopup,
+  updateProfile,
+} from "firebase/auth";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 const AuthContext = createContext();
 
@@ -17,13 +19,38 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  function signup(email, password) {
-    return createUserWithEmailAndPassword(auth, email, password);
+  async function createUserProfile(user, displayName) {
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        email: user.email,
+        displayName: displayName || user.email.split("@")[0],
+        photoURL:
+          user.photoURL ||
+          `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+        createdAt: serverTimestamp(),
+        bio: "",
+      });
+    }
+
+    return (await getDoc(userRef)).data();
   }
 
-  function login(email, password) {
+  async function signup(email, password, displayName) {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(result.user, {
+      displayName: displayName || email.split("@")[0],
+    });
+    await createUserProfile(result.user, displayName);
+    return result;
+  }
+
+  async function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);
   }
 
@@ -31,14 +58,24 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
-  function loginWithGoogle() {
+  async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    await createUserProfile(result.user, result.user.displayName);
+    return result;
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+
+      if (user) {
+        const profile = await createUserProfile(user, user.displayName);
+        setUserProfile(profile);
+      } else {
+        setUserProfile(null);
+      }
+
       setLoading(false);
     });
 
@@ -47,15 +84,12 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
+    userProfile,
     signup,
     login,
     logout,
-    loginWithGoogle
+    loginWithGoogle,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

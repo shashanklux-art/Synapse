@@ -199,14 +199,26 @@ export default function Feed() {
             {/* Post Header */}
             <div className="p-4 border-b border-gray-700">
               <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-gray-400 text-sm">
-                    Posted by{" "}
-                    <span className="text-blue-400">{post.authorEmail}</span>
-                  </p>
-                  <p className="text-gray-500 text-xs mt-1">
-                    Model: {post.model}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={post.authorPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId}`}
+                    alt={post.authorName}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/profile/${post.authorId}`);
+                      }}
+                      className="text-blue-400 hover:text-blue-300 hover:underline text-sm font-semibold"
+                    >
+                      {post.authorName || post.authorEmail}
+                    </button>
+                    <p className="text-gray-500 text-xs mt-0.5">
+                      Model: {post.model}
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => handleFork(post.messages)}

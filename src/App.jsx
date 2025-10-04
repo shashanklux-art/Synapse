@@ -3,10 +3,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Chat from './pages/Chat';
 import Feed from './pages/Feed';
+import Profile from './pages/Profile';
 
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
-  return currentUser ? children : <Navigate to="/login" />;
+  return currentUser ? children : <Navigate to="/feed" />;
 }
 
 function App() {
@@ -15,6 +16,8 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/profile/:userId" element={<Profile />} />
           <Route
             path="/chat"
             element={
@@ -23,15 +26,7 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/feed"
-            element={
-              <PrivateRoute>
-                <Feed />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/" element={<Navigate to="/chat" />} />
+          <Route path="/" element={<Navigate to="/feed" />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

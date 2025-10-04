@@ -155,11 +155,21 @@ export default function Chat() {
         messages: messages,
         authorId: currentUser.uid,
         authorEmail: currentUser.email,
+        authorName: currentUser.displayName || currentUser.email,
+        authorPhoto: currentUser.photoURL,
         model: 'GPT-3.5',
         likes: 0,
         dislikes: 0,
         createdAt: serverTimestamp()
       });
+
+      alert('Shared to feed!');
+      navigate('/feed');
+    } catch (error) {
+      console.error('Error sharing:', error);
+      alert('Failed to share');
+    }
+  }
 
       alert('Shared to feed!');
       navigate('/feed');
