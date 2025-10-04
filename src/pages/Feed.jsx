@@ -14,6 +14,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import LoginModal from "../components/LoginModal";
+import Logo from "../components/Logo";
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
@@ -38,7 +39,6 @@ export default function Feed() {
     return () => unsubscribe();
   }, []);
 
-  // Load comments for each post
   useEffect(() => {
     const unsubscribes = posts.map((post) => {
       const commentsQuery = query(
@@ -150,10 +150,11 @@ export default function Feed() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Header */}
       <div className="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Synapse</h1>
+          <button onClick={() => navigate('/feed')} className="hover:opacity-80 transition">
+            <Logo size="md" />
+          </button>
           <div className="flex gap-2">
             {currentUser ? (
               <>
@@ -182,7 +183,6 @@ export default function Feed() {
         </div>
       </div>
 
-      {/* Feed */}
       <div className="max-w-4xl mx-auto p-4 space-y-4">
         {posts.length === 0 && (
           <div className="text-center text-gray-500 mt-20">
@@ -196,7 +196,6 @@ export default function Feed() {
             key={post.id}
             className="bg-gray-800 rounded border border-gray-700 overflow-hidden"
           >
-            {/* Post Header */}
             <div className="p-4 border-b border-gray-700">
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
@@ -229,7 +228,6 @@ export default function Feed() {
               </div>
             </div>
 
-            {/* Messages */}
             <div className="p-4 space-y-3 bg-gray-900/50">
               {post.messages.map((msg, idx) => (
                 <div key={idx}>
@@ -249,7 +247,6 @@ export default function Feed() {
               ))}
             </div>
 
-            {/* Actions Bar */}
             <div className="px-4 py-3 border-t border-gray-700 flex items-center gap-4">
               <button
                 onClick={() => handleLike(post.id)}
@@ -278,10 +275,8 @@ export default function Feed() {
               </button>
             </div>
 
-            {/* Comments Section */}
             {expandedComments[post.id] && (
               <div className="border-t border-gray-700 bg-gray-900/30">
-                {/* Add Comment */}
                 <div className="p-4 border-b border-gray-700">
                   <textarea
                     value={commentTexts[post.id] || ""}
@@ -304,7 +299,6 @@ export default function Feed() {
                   </button>
                 </div>
 
-                {/* Comments List */}
                 <div className="p-4 space-y-3">
                   {post.comments?.length === 0 && (
                     <p className="text-gray-500 text-sm">

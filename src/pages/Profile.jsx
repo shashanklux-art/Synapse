@@ -11,6 +11,7 @@ import {
   orderBy, 
   getDocs 
 } from 'firebase/firestore';
+import Logo from '../components/Logo';
 
 export default function Profile() {
   const { userId } = useParams();
@@ -23,13 +24,11 @@ export default function Profile() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        // Load user profile
         const userDoc = await getDoc(doc(db, 'users', userId));
         if (userDoc.exists()) {
           setProfile(userDoc.data());
         }
 
-        // Load user's posts
         const postsQuery = query(
           collection(db, 'posts'),
           where('authorId', '==', userId),
@@ -78,10 +77,11 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Header */}
       <div className="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Synapse</h1>
+          <button onClick={() => navigate('/feed')} className="hover:opacity-80 transition">
+            <Logo size="md" />
+          </button>
           <div className="flex gap-2">
             <button
               onClick={() => navigate('/feed')}
@@ -109,7 +109,6 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Profile Section */}
       <div className="max-w-4xl mx-auto p-4">
         <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
           <div className="flex items-start gap-4">
@@ -136,7 +135,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* User's Posts */}
         <h3 className="text-xl font-bold text-white mb-4">
           {isOwnProfile ? 'Your Posts' : `Posts by ${profile.displayName}`}
         </h3>

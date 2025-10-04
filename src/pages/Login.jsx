@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +24,7 @@ export default function Login() {
       if (isLogin) {
         await login(email, password);
       } else {
-        await signup(email, password);
+        await signup(email, password, displayName);
       }
 
       navigate('/');
@@ -48,6 +50,10 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
       <div className="max-w-md w-full bg-gray-800 rounded-lg p-8 shadow-xl">
+        <div className="flex justify-center mb-6">
+          <Logo size="lg" />
+        </div>
+
         <h2 className="text-3xl font-bold text-white text-center mb-8">
           {isLogin ? 'Login to Synapse' : 'Join Synapse'}
         </h2>
@@ -59,6 +65,19 @@ export default function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div>
+              <label className="block text-gray-300 mb-2">Display Name</label>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-blue-500"
+                placeholder="How should we call you?"
+              />
+            </div>
+          )}
+
           <div>
             <label className="block text-gray-300 mb-2">Email</label>
             <input

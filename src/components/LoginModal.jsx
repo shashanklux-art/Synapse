@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import Logo from './Logo';
 
 export default function LoginModal({ isOpen, onClose, onSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { login, signup, loginWithGoogle } = useAuth();
@@ -17,7 +18,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
     e.preventDefault();
 
     try {
-      setError("");
+      setError('');
       setLoading(true);
 
       if (isLogin) {
@@ -36,7 +37,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
 
   async function handleGoogleLogin() {
     try {
-      setError("");
+      setError('');
       setLoading(true);
       await loginWithGoogle();
       onSuccess();
@@ -47,22 +48,17 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-gray-800 rounded-lg p-8 max-w-md w-full"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-gray-800 rounded-lg p-8 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center mb-4">
+          <Logo size="md" />
+        </div>
+
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-white">
-            {isLogin ? "Login" : "Sign Up"}
+            {isLogin ? 'Login' : 'Sign Up'}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">
             ×
           </button>
         </div>
@@ -114,7 +110,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition disabled:opacity-50"
           >
-            {loading ? "Loading..." : isLogin ? "Login" : "Sign Up"}
+            {loading ? 'Loading...' : (isLogin ? 'Login' : 'Sign Up')}
           </button>
         </form>
 
@@ -141,7 +137,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
             onClick={() => setIsLogin(!isLogin)}
             className="text-blue-400 hover:text-blue-300"
           >
-            {isLogin ? "Sign Up" : "Login"}
+            {isLogin ? 'Sign Up' : 'Login'}
           </button>
         </p>
       </div>
