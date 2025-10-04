@@ -1,9 +1,9 @@
 export default function Logo({ size = "md", showText = true, className = "" }) {
   const sizes = {
-    sm: { svg: "w-6 h-6", text: "text-lg" },
-    md: { svg: "w-8 h-8", text: "text-xl" },
-    lg: { svg: "w-12 h-12", text: "text-2xl" },
-    xl: { svg: "w-16 h-16", text: "text-3xl" }
+    sm: { svg: "w-8 h-8", text: "text-xl" },
+    md: { svg: "w-10 h-10", text: "text-2xl" },
+    lg: { svg: "w-14 h-14", text: "text-3xl" },
+    xl: { svg: "w-20 h-20", text: "text-4xl" }
   };
 
   const currentSize = sizes[size];

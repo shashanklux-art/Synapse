@@ -138,14 +138,13 @@ export default function Feed() {
   }
 
   const getVoteColor = (votes) => {
-    if (votes > 0) return "text-orange-500";
-    if (votes < 0) return "text-blue-500";
+    if (votes > 0) return "text-[#58a6ff]";
+    if (votes < 0) return "text-[#238636]";
     return "text-gray-400";
   };
 
   return (
     <div className="min-h-screen bg-[#0b1416]">
-      {/* Reddit-style Header */}
       <div className="bg-[#1a1a1b] border-b border-[#343536] sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
           <button onClick={() => navigate('/feed')} className="hover:opacity-80 transition">
@@ -182,7 +181,7 @@ export default function Feed() {
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="px-6 py-1.5 bg-[#ff4500] hover:bg-[#ff5414] text-white rounded-full text-sm font-bold transition"
+                className="px-6 py-1.5 bg-[#58a6ff] hover:bg-[#4a9aed] text-white rounded-full text-sm font-bold transition"
               >
                 Log In
               </button>
@@ -191,7 +190,6 @@ export default function Feed() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 py-5">
         {posts.length === 0 && (
           <div className="text-center text-gray-500 mt-20 bg-[#1a1a1b] rounded p-8">
@@ -210,11 +208,10 @@ export default function Feed() {
                 className="bg-[#1a1a1b] border border-[#343536] hover:border-[#4a4a4b] rounded overflow-hidden transition"
               >
                 <div className="flex">
-                  {/* Vote Column */}
                   <div className="bg-[#161617] w-10 flex flex-col items-center py-2 gap-1">
                     <button
                       onClick={() => handleLike(post.id)}
-                      className="text-gray-400 hover:text-orange-500 hover:bg-[#272729] p-1 rounded transition"
+                      className="text-gray-400 hover:text-[#58a6ff] hover:bg-[#272729] p-1 rounded transition"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" />
@@ -225,7 +222,7 @@ export default function Feed() {
                     </span>
                     <button
                       onClick={() => handleDislike(post.id)}
-                      className="text-gray-400 hover:text-blue-500 hover:bg-[#272729] p-1 rounded transition"
+                      className="text-gray-400 hover:text-[#238636] hover:bg-[#272729] p-1 rounded transition"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
@@ -233,9 +230,7 @@ export default function Feed() {
                     </button>
                   </div>
 
-                  {/* Content Column */}
                   <div className="flex-1 p-2">
-                    {/* Post Header */}
                     <div className="flex items-center gap-1 text-xs text-gray-400 mb-2">
                       <button
                         onClick={() => navigate(`/profile/${post.authorId}`)}
@@ -258,7 +253,6 @@ export default function Feed() {
                       <span className="text-gray-500">{post.model}</span>
                     </div>
 
-                    {/* Messages */}
                     <div className="space-y-2.5 mb-3">
                       {post.messages.map((msg, idx) => (
                         <div key={idx}>
@@ -274,7 +268,6 @@ export default function Feed() {
                       ))}
                     </div>
 
-                    {/* Action Buttons */}
                     <div className="flex items-center gap-3 text-xs font-bold text-gray-400">
                       <button
                         onClick={() => toggleComments(post.id)}
@@ -304,10 +297,8 @@ export default function Feed() {
                       </button>
                     </div>
 
-                    {/* Comments Section */}
                     {expandedComments[post.id] && (
                       <div className="mt-4 pt-3 border-t border-[#343536]">
-                        {/* Add Comment */}
                         <div className="mb-3">
                           <textarea
                             value={commentTexts[post.id] || ""}
@@ -318,21 +309,20 @@ export default function Feed() {
                               }))
                             }
                             placeholder="What are your thoughts?"
-                            className="w-full px-3 py-2 bg-[#272729] border border-[#343536] focus:border-white rounded text-white text-sm resize-none focus:outline-none"
+                            className="w-full px-3 py-2 bg-[#272729] border border-[#343536] focus:border-[#58a6ff] rounded text-white text-sm resize-none focus:outline-none"
                             rows="3"
                           />
                           <div className="flex justify-end mt-2">
                             <button
                               onClick={() => handleAddComment(post.id)}
                               disabled={!commentTexts[post.id]?.trim()}
-                              className="px-6 py-1.5 bg-[#ff4500] hover:bg-[#ff5414] text-white rounded-full text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-6 py-1.5 bg-[#58a6ff] hover:bg-[#4a9aed] text-white rounded-full text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Comment
                             </button>
                           </div>
                         </div>
 
-                        {/* Comments List */}
                         <div className="space-y-3">
                           {post.comments?.length === 0 && (
                             <p className="text-gray-500 text-sm text-center py-4">

@@ -49,7 +49,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-gray-800 rounded-lg p-8 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-[#1a1a1b] rounded-lg p-8 max-w-md w-full border border-[#343536]" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center mb-4">
           <Logo size="md" />
         </div>
@@ -77,7 +77,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 bg-[#272729] border border-[#343536] focus:border-[#58a6ff] rounded text-white focus:outline-none"
                 placeholder="How should we call you?"
               />
             </div>
@@ -89,7 +89,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-2 bg-[#272729] border border-[#343536] focus:border-[#58a6ff] rounded text-white focus:outline-none"
               required
             />
           </div>
@@ -100,7 +100,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-2 bg-[#272729] border border-[#343536] focus:border-[#58a6ff] rounded text-white focus:outline-none"
               required
             />
           </div>
@@ -108,7 +108,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition disabled:opacity-50"
+            className="w-full bg-[#58a6ff] hover:bg-[#4a9aed] text-white font-semibold py-2 rounded transition disabled:opacity-50"
           >
             {loading ? 'Loading...' : (isLogin ? 'Login' : 'Sign Up')}
           </button>
@@ -116,10 +116,10 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-600"></div>
+            <div className="w-full border-t border-[#343536]"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-gray-800 text-gray-400">Or</span>
+            <span className="px-2 bg-[#1a1a1b] text-gray-400">Or</span>
           </div>
         </div>
 
@@ -135,7 +135,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-blue-400 hover:text-blue-300"
+            className="text-[#58a6ff] hover:text-[#4a9aed]"
           >
             {isLogin ? 'Sign Up' : 'Login'}
           </button>
