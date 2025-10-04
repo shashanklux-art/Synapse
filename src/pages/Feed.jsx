@@ -27,7 +27,6 @@ export default function Feed() {
 
   useEffect(() => {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const postsData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -35,7 +34,6 @@ export default function Feed() {
       }));
       setPosts(postsData);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -45,19 +43,16 @@ export default function Feed() {
         collection(db, "posts", post.id, "comments"),
         orderBy("createdAt", "desc"),
       );
-
       return onSnapshot(commentsQuery, (snapshot) => {
         const comments = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
         setPosts((prev) =>
           prev.map((p) => (p.id === post.id ? { ...p, comments } : p)),
         );
       });
     });
-
     return () => unsubscribes.forEach((unsub) => unsub());
   }, [posts.length]);
 
@@ -80,7 +75,6 @@ export default function Feed() {
 
   async function handleLike(postId) {
     if (!requireAuth(() => handleLike(postId))) return;
-
     try {
       await updateDoc(doc(db, "posts", postId), {
         likes: increment(1),
@@ -92,7 +86,6 @@ export default function Feed() {
 
   async function handleDislike(postId) {
     if (!requireAuth(() => handleDislike(postId))) return;
-
     try {
       await updateDoc(doc(db, "posts", postId), {
         dislikes: increment(1),
@@ -104,7 +97,6 @@ export default function Feed() {
 
   function handleFork(messages) {
     if (!requireAuth(() => handleFork(messages))) return;
-
     const firstUserMessage = messages.find((m) => m.role === "user");
     if (firstUserMessage) {
       navigate("/chat", {
@@ -118,10 +110,8 @@ export default function Feed() {
 
   async function handleAddComment(postId) {
     if (!requireAuth(() => handleAddComment(postId))) return;
-
     const commentText = commentTexts[postId];
     if (!commentText?.trim()) return;
-
     try {
       await addDoc(collection(db, "posts", postId, "comments"), {
         text: commentText,
@@ -129,7 +119,6 @@ export default function Feed() {
         authorEmail: currentUser.email,
         createdAt: serverTimestamp(),
       });
-
       setCommentTexts((prev) => ({ ...prev, [postId]: "" }));
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -148,25 +137,44 @@ export default function Feed() {
     navigate("/");
   }
 
+  const getVoteColor = (votes) => {
+    if (votes > 0) return "text-orange-500";
+    if (votes < 0) return "text-blue-500";
+    return "text-gray-400";
+  };
+
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+    <div className="min-h-screen bg-[#0b1416]">
+      {/* Reddit-style Header */}
+      <div className="bg-[#1a1a1b] border-b border-[#343536] sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
           <button onClick={() => navigate('/feed')} className="hover:opacity-80 transition">
-            <Logo size="md" />
+            <Logo size="sm" />
           </button>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-2">
             {currentUser ? (
               <>
                 <button
                   onClick={() => navigate("/chat")}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition font-semibold"
+                  className="px-4 py-1.5 bg-transparent border border-[#343536] hover:bg-[#272729] text-white rounded-full text-sm font-semibold transition"
                 >
                   Chat
                 </button>
                 <button
+                  onClick={() => navigate(`/profile/${currentUser.uid}`)}
+                  className="flex items-center gap-2 px-3 py-1.5 hover:bg-[#272729] rounded transition"
+                >
+                  <img
+                    src={currentUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}`}
+                    alt="Profile"
+                    className="w-6 h-6 rounded-full"
+                  />
+                  <span className="text-white text-sm hidden md:block">{currentUser.displayName || currentUser.email}</span>
+                </button>
+                <button
                   onClick={handleLogout}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                  className="text-gray-400 hover:text-white text-sm px-3"
                 >
                   Logout
                 </button>
@@ -174,150 +182,188 @@ export default function Feed() {
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition font-semibold"
+                className="px-6 py-1.5 bg-[#ff4500] hover:bg-[#ff5414] text-white rounded-full text-sm font-bold transition"
               >
-                Login / Sign Up
+                Log In
               </button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-4 space-y-4">
+      {/* Main Content */}
+      <div className="max-w-5xl mx-auto px-4 py-5">
         {posts.length === 0 && (
-          <div className="text-center text-gray-500 mt-20">
-            <h2 className="text-2xl font-bold mb-2">No posts yet</h2>
-            <p>Be the first to share a conversation!</p>
+          <div className="text-center text-gray-500 mt-20 bg-[#1a1a1b] rounded p-8">
+            <h2 className="text-xl font-semibold mb-2 text-white">There are no posts in this subreddit</h2>
+            <p className="text-sm">Be the first to share a conversation</p>
           </div>
         )}
 
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="bg-gray-800 rounded border border-gray-700 overflow-hidden"
-          >
-            <div className="p-4 border-b border-gray-700">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={post.authorPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId}`}
-                    alt={post.authorName}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div>
+        <div className="space-y-2.5">
+          {posts.map((post) => {
+            const totalVotes = (post.likes || 0) - (post.dislikes || 0);
+
+            return (
+              <div
+                key={post.id}
+                className="bg-[#1a1a1b] border border-[#343536] hover:border-[#4a4a4b] rounded overflow-hidden transition"
+              >
+                <div className="flex">
+                  {/* Vote Column */}
+                  <div className="bg-[#161617] w-10 flex flex-col items-center py-2 gap-1">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/profile/${post.authorId}`);
-                      }}
-                      className="text-blue-400 hover:text-blue-300 hover:underline text-sm font-semibold"
+                      onClick={() => handleLike(post.id)}
+                      className="text-gray-400 hover:text-orange-500 hover:bg-[#272729] p-1 rounded transition"
                     >
-                      {post.authorName || post.authorEmail}
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" />
+                      </svg>
                     </button>
-                    <p className="text-gray-500 text-xs mt-0.5">
-                      Model: {post.model}
-                    </p>
+                    <span className={`text-xs font-bold ${getVoteColor(totalVotes)}`}>
+                      {totalVotes}
+                    </span>
+                    <button
+                      onClick={() => handleDislike(post.id)}
+                      className="text-gray-400 hover:text-blue-500 hover:bg-[#272729] p-1 rounded transition"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </button>
                   </div>
-                </div>
-                <button
-                  onClick={() => handleFork(post.messages)}
-                  className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm font-semibold transition"
-                >
-                  🔄 Fork
-                </button>
-              </div>
-            </div>
 
-            <div className="p-4 space-y-3 bg-gray-900/50">
-              {post.messages.map((msg, idx) => (
-                <div key={idx}>
-                  <p className="text-xs text-gray-500 mb-1 uppercase font-semibold">
-                    {msg.role === "user" ? "💬 Prompt" : "🤖 Response"}
-                  </p>
-                  <div
-                    className={`p-3 rounded text-sm ${
-                      msg.role === "user"
-                        ? "bg-blue-900/30 border border-blue-800 text-blue-100"
-                        : "bg-gray-800 text-gray-300"
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="px-4 py-3 border-t border-gray-700 flex items-center gap-4">
-              <button
-                onClick={() => handleLike(post.id)}
-                className="flex items-center gap-2 text-gray-400 hover:text-orange-400 transition"
-              >
-                <span>⬆</span>
-                <span className="text-sm font-semibold">{post.likes || 0}</span>
-              </button>
-              <button
-                onClick={() => handleDislike(post.id)}
-                className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition"
-              >
-                <span>⬇</span>
-                <span className="text-sm font-semibold">
-                  {post.dislikes || 0}
-                </span>
-              </button>
-              <button
-                onClick={() => toggleComments(post.id)}
-                className="flex items-center gap-2 text-gray-400 hover:text-gray-300 transition"
-              >
-                <span>💬</span>
-                <span className="text-sm">
-                  {post.comments?.length || 0} Comments
-                </span>
-              </button>
-            </div>
-
-            {expandedComments[post.id] && (
-              <div className="border-t border-gray-700 bg-gray-900/30">
-                <div className="p-4 border-b border-gray-700">
-                  <textarea
-                    value={commentTexts[post.id] || ""}
-                    onChange={(e) =>
-                      setCommentTexts((prev) => ({
-                        ...prev,
-                        [post.id]: e.target.value,
-                      }))
-                    }
-                    placeholder="Add a comment..."
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-blue-500 resize-none"
-                    rows="2"
-                  />
-                  <button
-                    onClick={() => handleAddComment(post.id)}
-                    disabled={!commentTexts[post.id]?.trim()}
-                    className="mt-2 px-4 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Comment
-                  </button>
-                </div>
-
-                <div className="p-4 space-y-3">
-                  {post.comments?.length === 0 && (
-                    <p className="text-gray-500 text-sm">
-                      No comments yet. Be the first!
-                    </p>
-                  )}
-                  {post.comments?.map((comment) => (
-                    <div key={comment.id} className="bg-gray-800 p-3 rounded">
-                      <p className="text-blue-400 text-xs mb-1">
-                        {comment.authorEmail}
-                      </p>
-                      <p className="text-gray-300 text-sm">{comment.text}</p>
+                  {/* Content Column */}
+                  <div className="flex-1 p-2">
+                    {/* Post Header */}
+                    <div className="flex items-center gap-1 text-xs text-gray-400 mb-2">
+                      <button
+                        onClick={() => navigate(`/profile/${post.authorId}`)}
+                        className="flex items-center gap-1.5 hover:underline"
+                      >
+                        <img
+                          src={post.authorPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId}`}
+                          alt={post.authorName}
+                          className="w-5 h-5 rounded-full"
+                        />
+                        <span className="font-semibold text-white">
+                          {post.authorName || post.authorEmail}
+                        </span>
+                      </button>
+                      <span>•</span>
+                      <span className="text-gray-500">
+                        {post.createdAt?.toDate?.()?.toLocaleDateString() || 'now'}
+                      </span>
+                      <span>•</span>
+                      <span className="text-gray-500">{post.model}</span>
                     </div>
-                  ))}
+
+                    {/* Messages */}
+                    <div className="space-y-2.5 mb-3">
+                      {post.messages.map((msg, idx) => (
+                        <div key={idx}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] uppercase font-bold text-gray-500">
+                              {msg.role === "user" ? "PROMPT" : "RESPONSE"}
+                            </span>
+                          </div>
+                          <div className={`text-sm ${msg.role === "user" ? "text-white" : "text-gray-300"}`}>
+                            <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-3 text-xs font-bold text-gray-400">
+                      <button
+                        onClick={() => toggleComments(post.id)}
+                        className="flex items-center gap-1.5 hover:bg-[#272729] px-2 py-1 rounded transition"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                        </svg>
+                        <span>{post.comments?.length || 0} Comments</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleFork(post.messages)}
+                        className="flex items-center gap-1.5 hover:bg-[#272729] px-2 py-1 rounded transition"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span>Fork</span>
+                      </button>
+
+                      <button className="flex items-center gap-1.5 hover:bg-[#272729] px-2 py-1 rounded transition">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                        </svg>
+                        <span>Share</span>
+                      </button>
+                    </div>
+
+                    {/* Comments Section */}
+                    {expandedComments[post.id] && (
+                      <div className="mt-4 pt-3 border-t border-[#343536]">
+                        {/* Add Comment */}
+                        <div className="mb-3">
+                          <textarea
+                            value={commentTexts[post.id] || ""}
+                            onChange={(e) =>
+                              setCommentTexts((prev) => ({
+                                ...prev,
+                                [post.id]: e.target.value,
+                              }))
+                            }
+                            placeholder="What are your thoughts?"
+                            className="w-full px-3 py-2 bg-[#272729] border border-[#343536] focus:border-white rounded text-white text-sm resize-none focus:outline-none"
+                            rows="3"
+                          />
+                          <div className="flex justify-end mt-2">
+                            <button
+                              onClick={() => handleAddComment(post.id)}
+                              disabled={!commentTexts[post.id]?.trim()}
+                              className="px-6 py-1.5 bg-[#ff4500] hover:bg-[#ff5414] text-white rounded-full text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Comment
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Comments List */}
+                        <div className="space-y-3">
+                          {post.comments?.length === 0 && (
+                            <p className="text-gray-500 text-sm text-center py-4">
+                              No comments yet. Be the first to share what you think!
+                            </p>
+                          )}
+                          {post.comments?.map((comment) => (
+                            <div key={comment.id} className="flex gap-2">
+                              <div className="w-6 h-6 rounded-full bg-gray-600 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-semibold text-gray-400">
+                                    {comment.authorEmail}
+                                  </span>
+                                  <span className="text-xs text-gray-600">now</span>
+                                </div>
+                                <p className="text-sm text-gray-300 leading-relaxed">
+                                  {comment.text}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
 
       <LoginModal

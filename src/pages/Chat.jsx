@@ -29,13 +29,11 @@ export default function Chat() {
 
   useEffect(() => {
     if (!currentUser) return;
-
     const q = query(
       collection(db, 'conversations'),
       where('userId', '==', currentUser.uid),
       orderBy('updatedAt', 'desc')
     );
-
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const convos = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -43,7 +41,6 @@ export default function Chat() {
       }));
       setSavedConversations(convos);
     });
-
     return () => unsubscribe();
   }, [currentUser]);
 
@@ -158,11 +155,11 @@ export default function Chat() {
         createdAt: serverTimestamp()
       });
 
-      alert('Shared to feed!');
+      alert('Posted to Synapse!');
       navigate('/feed');
     } catch (error) {
       console.error('Error sharing:', error);
-      alert('Failed to share');
+      alert('Failed to post');
     }
   }
 
@@ -184,32 +181,33 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-screen flex bg-gray-900">
+    <div className="h-screen flex bg-[#0b1416]">
+      {/* History Sidebar - Reddit Style */}
       {showHistory && (
-        <div className="w-80 bg-gray-800 border-r border-gray-700 overflow-y-auto">
-          <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-            <h2 className="text-white font-bold">Conversation History</h2>
+        <div className="w-64 bg-[#1a1a1b] border-r border-[#343536] overflow-y-auto">
+          <div className="p-3 border-b border-[#343536] flex justify-between items-center">
+            <h2 className="text-white font-semibold text-sm">History</h2>
             <button 
               onClick={() => setShowHistory(false)}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white text-xl leading-none"
             >
-              ✕
+              ×
             </button>
           </div>
-          <div className="p-2">
+          <div className="p-1">
             {savedConversations.length === 0 ? (
-              <p className="text-gray-500 text-sm p-4">No saved conversations yet</p>
+              <p className="text-gray-500 text-xs p-3">No saved conversations</p>
             ) : (
               savedConversations.map((convo) => (
                 <button
                   key={convo.id}
                   onClick={() => loadConversation(convo)}
-                  className={`w-full text-left p-3 rounded mb-2 hover:bg-gray-700 transition ${
-                    currentConvoId === convo.id ? 'bg-gray-700' : 'bg-gray-800'
+                  className={`w-full text-left px-2 py-2 rounded text-sm hover:bg-[#272729] transition ${
+                    currentConvoId === convo.id ? 'bg-[#272729]' : ''
                   }`}
                 >
-                  <p className="text-white text-sm truncate">{convo.title}</p>
-                  <p className="text-gray-500 text-xs mt-1">
+                  <p className="text-white text-xs truncate">{convo.title}</p>
+                  <p className="text-gray-500 text-[10px] mt-0.5">
                     {convo.messages?.length || 0} messages
                   </p>
                 </button>
@@ -219,21 +217,25 @@ export default function Chat() {
         </div>
       )}
 
+      {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        <div className="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
+        {/* Reddit-style Header */}
+        <div className="bg-[#1a1a1b] border-b border-[#343536] h-12 flex items-center justify-between px-3">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+              className="p-1.5 hover:bg-[#272729] rounded transition text-gray-400"
             >
-              {showHistory ? '◀' : '☰'}
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+              </svg>
             </button>
-            <Logo size="md" />
+            <Logo size="sm" />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => navigate('/feed')}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+              className="px-3 py-1 text-xs font-semibold text-gray-400 hover:bg-[#272729] rounded transition"
             >
               Feed
             </button>
@@ -241,78 +243,103 @@ export default function Chat() {
               <>
                 <button
                   onClick={handleNewChat}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                  className="px-3 py-1 text-xs font-semibold text-gray-400 hover:bg-[#272729] rounded transition"
                 >
-                  New Chat
+                  New
                 </button>
                 <button
                   onClick={handleShareToFeed}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition font-semibold"
+                  className="px-4 py-1 bg-[#ff4500] hover:bg-[#ff5414] text-white rounded-full text-xs font-bold transition"
                 >
-                  Share
+                  Post
                 </button>
               </>
             )}
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition"
+              className="px-3 py-1 text-xs font-semibold text-gray-400 hover:bg-[#272729] rounded transition"
             >
               Logout
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 && (
-            <div className="text-center text-gray-500 mt-20">
-              <h2 className="text-2xl font-bold mb-2">Start a conversation</h2>
-              <p>Your messages will be auto-saved</p>
-            </div>
-          )}
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="max-w-3xl mx-auto space-y-3">
+            {messages.length === 0 && (
+              <div className="text-center text-gray-500 mt-20">
+                <h2 className="text-xl font-semibold mb-2 text-white">Start a conversation</h2>
+                <p className="text-sm">Your messages auto-save as you chat</p>
+              </div>
+            )}
 
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+            {messages.map((msg, idx) => (
               <div
-                className={`max-w-2xl px-4 py-3 rounded-lg ${
-                  msg.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-100'
-                }`}
+                key={idx}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                <div className={`max-w-[85%] ${msg.role === 'user' ? '' : 'flex gap-2'}`}>
+                  {msg.role === 'assistant' && (
+                    <div className="w-7 h-7 rounded-full bg-[#ff4500] flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+                      </svg>
+                    </div>
+                  )}
+                  <div
+                    className={`px-3 py-2 rounded text-sm ${
+                      msg.role === 'user'
+                        ? 'bg-[#ff4500] text-white'
+                        : 'bg-[#1a1a1b] border border-[#343536] text-gray-300'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {loading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-700 text-gray-100 px-4 py-3 rounded-lg">
-                <p>Thinking...</p>
+            {loading && (
+              <div className="flex justify-start">
+                <div className="flex gap-2">
+                  <div className="w-7 h-7 rounded-full bg-[#ff4500] flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                    </svg>
+                  </div>
+                  <div className="bg-[#1a1a1b] border border-[#343536] text-gray-300 px-3 py-2 rounded text-sm">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
+                      <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
+                      <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
-        <div className="border-t border-gray-700 p-4 bg-gray-800">
-          <div className="max-w-4xl mx-auto flex gap-2">
+        {/* Input - Reddit Style */}
+        <div className="border-t border-[#343536] p-3 bg-[#1a1a1b]">
+          <div className="max-w-3xl mx-auto flex gap-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder="Type your message..."
-              className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+              placeholder="Message..."
+              className="flex-1 px-4 py-2 bg-[#272729] border border-[#343536] focus:border-white rounded text-white text-sm focus:outline-none"
               disabled={loading}
             />
             <button
               onClick={handleSend}
               disabled={loading || !input.trim()}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2 bg-[#ff4500] hover:bg-[#ff5414] text-white rounded-full text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Send
             </button>

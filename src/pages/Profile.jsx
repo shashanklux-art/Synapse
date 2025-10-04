@@ -59,33 +59,36 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <p className="text-gray-400">Loading profile...</p>
+      <div className="min-h-screen bg-[#0b1416] flex items-center justify-center">
+        <p className="text-gray-400">Loading...</p>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0b1416] flex items-center justify-center">
         <p className="text-gray-400">User not found</p>
       </div>
     );
   }
 
   const isOwnProfile = currentUser?.uid === userId;
+  const totalKarma = posts.reduce((sum, post) => sum + ((post.likes || 0) - (post.dislikes || 0)), 0);
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+    <div className="min-h-screen bg-[#0b1416]">
+      {/* Reddit-style Header */}
+      <div className="bg-[#1a1a1b] border-b border-[#343536] sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
           <button onClick={() => navigate('/feed')} className="hover:opacity-80 transition">
-            <Logo size="md" />
+            <Logo size="sm" />
           </button>
-          <div className="flex gap-2">
+
+          <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/feed')}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+              className="px-3 py-1 text-xs font-semibold text-gray-400 hover:bg-[#272729] rounded transition"
             >
               Feed
             </button>
@@ -93,13 +96,13 @@ export default function Profile() {
               <>
                 <button
                   onClick={() => navigate('/chat')}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
+                  className="px-4 py-1.5 bg-transparent border border-[#343536] hover:bg-[#272729] text-white rounded-full text-sm font-semibold transition"
                 >
                   Chat
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition"
+                  className="text-gray-400 hover:text-white text-sm px-3"
                 >
                   Logout
                 </button>
@@ -109,74 +112,85 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-4">
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
+      {/* Profile Banner */}
+      <div className="bg-[#ff4500] h-24"></div>
+
+      {/* Profile Content */}
+      <div className="max-w-5xl mx-auto px-4">
+        {/* Profile Card */}
+        <div className="bg-[#1a1a1b] border border-[#343536] rounded -mt-8 mb-4 p-4">
           <div className="flex items-start gap-4">
             <img
               src={profile.photoURL}
               alt={profile.displayName}
-              className="w-20 h-20 rounded-full"
+              className="w-20 h-20 rounded-full border-4 border-[#1a1a1b] -mt-10"
             />
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-1">
+            <div className="flex-1 pt-2">
+              <h1 className="text-2xl font-bold text-white mb-1">
                 {profile.displayName}
-              </h2>
-              <p className="text-gray-400 text-sm mb-3">{profile.email}</p>
+              </h1>
+              <p className="text-gray-400 text-sm mb-3">u/{profile.displayName}</p>
               {profile.bio && (
-                <p className="text-gray-300 mb-3">{profile.bio}</p>
+                <p className="text-gray-300 text-sm mb-3">{profile.bio}</p>
               )}
-              <div className="flex gap-4 text-sm text-gray-400">
-                <span>{posts.length} posts</span>
-                <span>
-                  Joined {profile.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently'}
-                </span>
+              <div className="flex gap-6 text-sm">
+                <div>
+                  <span className="text-white font-semibold">{totalKarma}</span>
+                  <span className="text-gray-400 ml-1">Karma</span>
+                </div>
+                <div>
+                  <span className="text-white font-semibold">{posts.length}</span>
+                  <span className="text-gray-400 ml-1">Posts</span>
+                </div>
+                <div>
+                  <span className="text-gray-400">
+                    Joined {profile.createdAt?.toDate?.()?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) || 'Recently'}
+                  </span>
+                </div>
               </div>
             </div>
+            {isOwnProfile && (
+              <button className="px-4 py-1.5 border border-[#343536] hover:bg-[#272729] text-white rounded-full text-sm font-semibold transition">
+                Edit Profile
+              </button>
+            )}
           </div>
         </div>
 
-        <h3 className="text-xl font-bold text-white mb-4">
-          {isOwnProfile ? 'Your Posts' : `Posts by ${profile.displayName}`}
-        </h3>
+        {/* Tabs */}
+        <div className="bg-[#1a1a1b] border border-[#343536] rounded mb-4">
+          <div className="flex border-b border-[#343536]">
+            <button className="px-4 py-2 text-sm font-semibold text-white border-b-2 border-white">
+              Posts
+            </button>
+            <button className="px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-[#272729]">
+              Comments
+            </button>
+            <button className="px-4 py-2 text-sm font-semibold text-gray-400 hover:bg-[#272729]">
+              About
+            </button>
+          </div>
+        </div>
 
+        {/* Posts */}
         {posts.length === 0 ? (
-          <div className="text-center text-gray-500 mt-10">
-            <p>No posts yet</p>
+          <div className="bg-[#1a1a1b] border border-[#343536] rounded p-12 text-center">
+            <div className="text-gray-500">
+              <svg className="w-16 h-16 mx-auto mb-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+              </svg>
+              <p className="text-sm font-semibold mb-1">hmm... u/{profile.displayName} hasn't posted anything</p>
+            </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="bg-gray-800 rounded border border-gray-700 overflow-hidden cursor-pointer hover:border-gray-600 transition"
-                onClick={() => navigate('/feed')}
-              >
-                <div className="p-4">
-                  <p className="text-gray-500 text-xs mb-2">
-                    Model: {post.model}
-                  </p>
-                  <div className="space-y-2">
-                    {post.messages.slice(0, 2).map((msg, idx) => (
-                      <div key={idx}>
-                        <p className="text-xs text-gray-500 uppercase">
-                          {msg.role === 'user' ? 'Prompt' : 'Response'}
-                        </p>
-                        <p className="text-gray-300 text-sm truncate">
-                          {msg.content}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-4 mt-3 text-sm text-gray-400">
-                    <span>⬆ {post.likes || 0}</span>
-                    <span>⬇ {post.dislikes || 0}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+          <div className="space-y-2.5">
+            {posts.map((post) => {
+              const totalVotes = (post.likes || 0) - (post.dislikes || 0);
+
+              return (
+                <div
+                  key={post.id}
+                  className="bg-[#1a1a1b] border border-[#343536] hover:border-[#4a4a4b] rounded overflow-hidden cursor-pointer transition"
+                  onClick={() => navigate('/feed')}
+                >
+                  <div className="flex">
