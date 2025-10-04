@@ -1,29 +1,21 @@
-modules = ["python-3.11"]
-[agent]
-expertMode = true
+modules = ["nodejs-20"]
+run = "npm run dev"
 
 [nix]
-channel = "stable-25_05"
+channel = "stable-24_05"
 
-[workflows]
-runButton = "Project"
+[deployment]
+run = ["sh", "-c", "npm run dev"]
+deploymentTarget = "cloudrun"
 
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
+[[ports]]
+localPort = 5173
+externalPort = 5173
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Run"
+[[ports]]
+localPort = 5174
+externalPort = 3000
 
-[[workflows.workflow]]
-name = "Run"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-
-[workflows.workflow.metadata]
-outputType = "console"
+[[ports]]
+localPort = 5175
+externalPort = 80
